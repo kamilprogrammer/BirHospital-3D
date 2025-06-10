@@ -1,103 +1,88 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
+import FloorPanel from "./components/FloorPanel";
+import ViewToggle from "./components/ViewToggle";
+import Canvas3d from "./components/Canvas3d";
+import Device from "./components/Device";
+import Canvas2d from "./components/Canvas";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedFloor, setSelectedFloor] = useState(1);
+  const [is3DView, setIs3DView] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const devices_idk_from_where_you_can_say_they_are_mock_data: Device[] = [
+    {
+      id: "1",
+      name: "Camera 01",
+      type: "camera",
+      location: { x: 12.34, y: 1.23, floor: 3 },
+      status: "active",
+      createdAt: new Date("2025-01-01T10:00:00Z"),
+      updatedAt: new Date("2025-05-08T12:00:00Z"),
+    },
+    {
+      id: "2",
+      name: "Telephone 02",
+      type: "telephone",
+      location: { x: 34.56, y: 2.34, floor: 5 },
+      status: "inactive",
+      createdAt: new Date("2025-02-01T12:00:00Z"),
+      updatedAt: new Date("2025-05-08T12:00:00Z"),
+    },
+    {
+      id: "3",
+      name: "Nurse System 03",
+      type: "nurseSystem",
+      location: { x: 45.67, y: 0.98, floor: 2 },
+      status: "maintenance",
+      createdAt: new Date("2025-03-01T14:00:00Z"),
+      updatedAt: new Date("2025-05-08T13:00:00Z"),
+    },
+    {
+      id: "4",
+      name: "Sensor 04",
+      type: "sensor",
+      location: { x: 56.78, y: 1.56, floor: 7 },
+      status: "active",
+      createdAt: new Date("2025-04-01T16:00:00Z"),
+      updatedAt: new Date("2025-05-08T14:00:00Z"),
+    },
+  ];
+  console.log(selectedFloor);
+  return (
+    <main className="flex min-h-screen bg-gray-100">
+      {/* Floor Panel */}
+      <div className="w-64 bg-white shadow-lg z-10">
+        <FloorPanel
+          selectedFloor={selectedFloor}
+          onFloorSelect={setSelectedFloor}
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 relative">
+        {is3DView ? (
+          <div className="w-full h-full">
+            <Canvas3d
+              devices={devices_idk_from_where_you_can_say_they_are_mock_data}
+              floor={Number(selectedFloor)}
+            ></Canvas3d>
+          </div>
+        ) : (
+          <div className="w-full h-full">
+            <Canvas2d
+              key={selectedFloor}
+              devices={devices_idk_from_where_you_can_say_they_are_mock_data}
+              floor={selectedFloor}
+            ></Canvas2d>
+          </div>
+        )}
+
+        {/* View Toggle Button */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+          <ViewToggle is3D={is3DView} onToggle={() => setIs3DView(!is3DView)} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }
