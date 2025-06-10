@@ -1,1 +1,0 @@
-# BirHospital-3D
