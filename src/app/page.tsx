@@ -58,7 +58,6 @@ export default function Home() {
           onFloorSelect={setSelectedFloor}
         />
       </div>
-
       {/* Main Content Area */}
       <div className="flex-1 relative">
         {is3DView ? (

@@ -1,21 +1,19 @@
 interface Device {
-  readonly id: string;
-  name: string;
-  type:
-    | "camera"
-    | "telephone"
-    | "Access Point"
-    | "IP TV"
-    | "nurseSystem"
-    | "sensor"
-    | string; // Extend this as needed
-  location: {
-    x: number;
-    y: number;
-    floor: number;
-  };
-  status: "active" | "inactive" | "maintenance";
-  createdAt: Date;
-  updatedAt: Date;
+  readonly id?: number;
+
+  type?: "Camera" | "Telephone" | "AP" | "IP TV" | "Nurse" | "Sensor" | string;
+  IP?: string;
+  MAC?: string;
+  MODEL?: string;
+  notes?: string;
+  x_2d?: number;
+  y_2d?: number;
+  floor?: number;
+  x_3d?: number;
+  y_3d?: number;
+  z_3d?: number;
+
+  status?: "active" | "inactive" | "maintenance";
+  createdAt?: Date;
 }
 export default Device;
