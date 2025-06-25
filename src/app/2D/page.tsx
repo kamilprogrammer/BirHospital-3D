@@ -9,7 +9,11 @@ import { supabase } from "../../lib/supabase";
 export default function Page() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
-
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    handleGetValues();
+    console.log(devices);
+  }, []);
   const handleAddCamera = () => {
     const newCamera: Device = {
       type: "camera",
@@ -55,15 +59,36 @@ export default function Page() {
 
     setDevices((prev) => [...prev, newSensor]);
   };
-
-  const handleSave = async () => {
+  const handleGetValues = async () => {
     try {
-      const { data, error } = await supabase.from("devices").insert(devices[0]);
+      setLoading(true);
+      const { data, error } = await supabase.from("Devices").select("*");
       if (error) throw error;
-      console.log(data);
+      setDevices(data);
+      setTimeout(() => {
+        console.log(devices);
+      }, 1000);
+      setLoading(false);
     } catch (error) {
-      console.error("Error saving devices:", error);
+      console.error("Error getting devices:", error);
     }
+  };
+  const handleSave = async () => {
+    console.log(devices);
+    setLoading(true);
+    devices.map(async (device) => {
+      if (device.id) {
+        const { data, error } = await supabase
+          .from("Devices")
+          .update(device)
+          .eq("id", device.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("Devices").insert(device);
+        if (error) throw error;
+      }
+    });
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -77,6 +102,16 @@ export default function Page() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedDeviceId]);
 
+  const handleUpdatePosition = (id: number, x: number, y: number) => {
+    console.log(id, x, y);
+    setDevices((prev) =>
+      prev.map((device) =>
+        device.id === id ? { ...device, x_2d: x, y_2d: y } : device
+      )
+    );
+    console.log(devices);
+  };
+
   return (
     <>
       <Canvas2d
@@ -84,47 +119,54 @@ export default function Page() {
         devices={devices}
         selectedDeviceId={selectedDeviceId}
         setSelectedDeviceId={setSelectedDeviceId}
+        onUpdatePosition={handleUpdatePosition}
       />
 
       <div className="flex">
         <Button
           onClick={handleAddCamera}
-          variant="default"
+          disabled={loading}
+          variant={loading ? "ghost" : "default"}
           className="m-2 p-2 w-fit"
         >
           Add Camera
         </Button>
         <Button
           onClick={handleAddTelephone}
-          variant="default"
+          disabled={loading}
+          variant={loading ? "ghost" : "default"}
           className="m-2 p-2 w-fit"
         >
           Add Telephone
         </Button>
         <Button
           onClick={handleAddServer}
-          variant="default"
+          disabled={loading}
+          variant={loading ? "ghost" : "default"}
           className="m-2 p-2 w-fit"
         >
           Add Server
         </Button>
         <Button
           onClick={handleAddNursing}
-          variant="default"
+          disabled={loading}
+          variant={loading ? "ghost" : "default"}
           className="m-2 p-2 w-fit"
         >
           Add Nursing
         </Button>
         <Button
           onClick={handleAddSensor}
-          variant="default"
+          disabled={loading}
+          variant={loading ? "ghost" : "default"}
           className="m-2 p-2 w-fit"
         >
           Add Sensor
         </Button>
         <Button
           onClick={handleSave}
-          variant="default"
+          disabled={loading}
+          variant={loading ? "ghost" : "default"}
           className="m-2 p-2 w-fit bg-indigo-800 hover:bg-blue-900"
         >
           Save Changes

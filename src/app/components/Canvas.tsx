@@ -12,78 +12,120 @@ import {
 } from "@react-three/drei";
 import Device from "./Device";
 import Model_decider from "./ModelDecider2D";
-import { Mesh } from "three";
+import { PerspectiveCamera } from "@react-three/drei";
+import * as THREE from "three";
+import { Group } from "three";
+import { useMemo } from "react";
 
 interface Canvas2dProps {
   floor: number;
   devices: Device[];
   selectedDeviceId: number | null;
   setSelectedDeviceId: Dispatch<SetStateAction<number | null>>;
+  onUpdatePosition: (id: number, x: number, y: number) => void;
 }
 
-function DeviceWithTransform({ device }: { device: Device }) {
+function DeviceWithTransform({
+  device,
+  onUpdatePosition,
+}: {
+  device: Device;
+  onUpdatePosition: (id: number, x: number, y: number) => void;
+}) {
+  const objectRef = useRef<THREE.Group>(null);
+  const previousPosition = useRef<THREE.Vector3>(new THREE.Vector3());
+  const firstDevice = useMemo(() => structuredClone(device), []); // empty dep list
+
   return (
-    <PivotControls
-      activeAxes={[true, true, false]}
-      scale={1.5}
-      disableScaling
-      disableRotations
-      depthTest={false}
-    >
-      <mesh
-        position={[device.x_2d || 0, device.y_2d || 0, 0]}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          console.log("Selected device ID:", device.id);
+    <mesh position={[firstDevice.x_2d!, firstDevice.y_2d!, 0]}>
+      <PivotControls
+        activeAxes={[true, true, false]}
+        scale={1}
+        disableScaling
+        disableRotations
+        depthTest={false}
+        onDragStart={() => {
+          if (!objectRef.current) return;
+          objectRef.current.updateMatrixWorld();
+          const pos = new THREE.Vector3();
+          const quat = new THREE.Quaternion();
+          const scale = new THREE.Vector3();
+          objectRef.current.matrixWorld.decompose(pos, quat, scale);
+          previousPosition.current = pos.clone();
+        }}
+        onDragEnd={() => {
+          if (!objectRef.current) return;
+          objectRef.current.updateMatrixWorld();
+
+          const newPos = new THREE.Vector3();
+          const quat = new THREE.Quaternion();
+          const scale = new THREE.Vector3();
+          objectRef.current.matrixWorld.decompose(newPos, quat, scale);
+
+          const prev = previousPosition.current;
+          if (!prev || !newPos.equals(prev)) {
+            console.log(device.id);
+            onUpdatePosition(device.id!, newPos.x, newPos.y);
+          }
         }}
       >
-        <sphereGeometry args={[0.5, 12, 12]} />
-
-        <Model_decider type={device.type!} />
-      </mesh>
-    </PivotControls>
+        <group ref={objectRef} onPointerDown={(e) => e.stopPropagation()}>
+          <mesh>
+            <Model_decider type={device.type!} />
+          </mesh>
+        </group>
+      </PivotControls>
+    </mesh>
   );
 }
 
 function SceneContent({
   floor,
   devices,
+  onUpdatePosition,
 }: {
   floor: number;
   devices: Device[];
+  onUpdatePosition: (id: number, x: number, y: number) => void;
 }) {
   const model = useGLTF(`/2D - Objects/1.glb`);
 
   return (
     <>
-      <ambientLight intensity={2} />
-      <directionalLight position={[0, -40, 0]} intensity={2} />
-      <pointLight position={[0, 5, 0]} intensity={2} />
-
       {devices.map((device) => (
-        <DeviceWithTransform key={device.id} device={device} />
+        <DeviceWithTransform
+          key={device.id}
+          device={device}
+          onUpdatePosition={onUpdatePosition}
+        />
       ))}
 
-      <Center>
-        <primitive
-          object={model.scene}
-          position={[0, -50, 2]}
-          scale={0.005}
-          rotation={[Math.PI / 2, 0, 0]}
-        />
-      </Center>
+      <primitive
+        object={model.scene}
+        position={[23, -30.5, 0]}
+        scale={0.005}
+        rotation={[Math.PI / 2, 0, 0]}
+      />
     </>
   );
 }
 
-export default function Canvas2d({ floor, devices }: Canvas2dProps) {
+export default function Canvas2d({
+  floor,
+  devices,
+  onUpdatePosition,
+}: Canvas2dProps) {
   return (
     <div id="canvas-wrapper" className="h-screen w-full">
       <Canvas>
         <Suspense fallback={null}>
-          <SceneContent floor={floor} devices={devices} />
+          <SceneContent
+            floor={floor}
+            devices={devices}
+            onUpdatePosition={onUpdatePosition}
+          />
         </Suspense>
-        <OrthographicCamera makeDefault position={[2, 10, 100]} zoom={30} />
+        <PerspectiveCamera makeDefault position={[0, 0, 30]} />
         <OrbitControls makeDefault enableZoom enablePan enableRotate={false} />
         <color attach="background" args={["#ffffff"]} />
       </Canvas>

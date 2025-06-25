@@ -15,7 +15,13 @@ export default function Model_decider({ type }: { type: string }) {
   if (!icon) return null;
 
   return (
-    <Html transform distanceFactor={0.6}>
+    <Html
+      transform
+      distanceFactor={0.4}
+      zIndexRange={[100, 0]}
+      position={[0, 0, 0.2]}
+      occlude={false}
+    >
       <div className="w-fit">
         <img src={icon} alt={type} />
       </div>
