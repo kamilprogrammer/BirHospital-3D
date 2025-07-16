@@ -25,17 +25,13 @@ export default function Canvas3d({ floor, devices }: Canvas3d) {
         return (
           <mesh
             key={device.id}
-            position={[device.location.x, device.location.y, 1]}
+            position={[device.x_3d! * 10, device.y_3d! * 10, 1]}
           >
-            <boxGeometry args={[0.5, 0.5, 0.5]} />
-            <meshStandardMaterial color="white" />
+            <boxGeometry args={[10, 10, 10]} />
+            <meshStandardMaterial color="red" />
           </mesh>
         );
       })}
-      <mesh>
-        <boxGeometry args={[2, 2, 2]} />
-        <meshStandardMaterial color="white" />
-      </mesh>
       <OrbitControls makeDefault />
     </Canvas>
   );

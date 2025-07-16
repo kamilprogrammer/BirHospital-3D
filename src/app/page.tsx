@@ -1,84 +1,197 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FloorPanel from "./components/FloorPanel";
 import ViewToggle from "./components/ViewToggle";
 import Canvas3d from "./components/Canvas3d";
 import Device from "./components/Device";
 import Canvas2d from "./components/Canvas";
+import { Button } from "@/components/ui/button";
+import { useFloor } from "./floorContext";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
-  const [selectedFloor, setSelectedFloor] = useState(1);
   const [is3DView, setIs3DView] = useState(false);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { floor } = useFloor() ?? { floor: 1, setFloor: () => {} };
 
-  const devices_idk_from_where_you_can_say_they_are_mock_data: Device[] = [
-    {
-      id: "1",
-      name: "Camera 01",
+  useEffect(() => {
+    handleGetValues();
+  }, []);
+  const handleAddCamera = () => {
+    const newCamera: Device = {
       type: "camera",
-      location: { x: 12.34, y: 1.23, floor: 3 },
-      status: "active",
-      createdAt: new Date("2025-01-01T10:00:00Z"),
-      updatedAt: new Date("2025-05-08T12:00:00Z"),
-    },
-    {
-      id: "2",
-      name: "Telephone 02",
+      x_2d: 0,
+      y_2d: 0,
+      floor: floor,
+    };
+
+    setDevices((prev) => [...prev, newCamera]);
+  };
+  const handleAddTelephone = () => {
+    const newTelephone: Device = {
       type: "telephone",
-      location: { x: 34.56, y: 2.34, floor: 5 },
-      status: "inactive",
-      createdAt: new Date("2025-02-01T12:00:00Z"),
-      updatedAt: new Date("2025-05-08T12:00:00Z"),
-    },
-    {
-      id: "3",
-      name: "Nurse System 03",
-      type: "nurseSystem",
-      location: { x: 45.67, y: 0.98, floor: 2 },
-      status: "maintenance",
-      createdAt: new Date("2025-03-01T14:00:00Z"),
-      updatedAt: new Date("2025-05-08T13:00:00Z"),
-    },
-    {
-      id: "4",
-      name: "Sensor 04",
+      x_2d: 0,
+      y_2d: 0,
+      floor: floor,
+    };
+
+    setDevices((prev) => [...prev, newTelephone]);
+  };
+  const handleAddServer = () => {
+    const newServer: Device = {
+      type: "server",
+      x_2d: 0,
+      y_2d: 0,
+      floor: floor,
+    };
+
+    setDevices((prev) => [...prev, newServer]);
+  };
+  const handleAddNursing = () => {
+    const newNursing: Device = {
+      type: "nursing",
+      x_2d: 0,
+      y_2d: 0,
+      floor: floor,
+    };
+
+    setDevices((prev) => [...prev, newNursing]);
+  };
+  const handleAddSensor = () => {
+    const newSensor: Device = {
       type: "sensor",
-      location: { x: 56.78, y: 1.56, floor: 7 },
-      status: "active",
-      createdAt: new Date("2025-04-01T16:00:00Z"),
-      updatedAt: new Date("2025-05-08T14:00:00Z"),
-    },
-  ];
-  console.log(selectedFloor);
+      x_2d: 0,
+      y_2d: 0,
+      floor: floor,
+    };
+
+    setDevices((prev) => [...prev, newSensor]);
+  };
+  const handleGetValues = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.from("Devices").select("*");
+      console.log(data);
+      if (error) throw error;
+      setDevices(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error getting devices:", error);
+    }
+  };
+  const handleSave = async () => {
+    console.log(devices);
+    setLoading(true);
+    devices.map(async (device) => {
+      if (device.id) {
+        const { data, error } = await supabase
+          .from("Devices")
+          .update(device)
+          .eq("id", device.id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("Devices").insert(device);
+        if (error) throw error;
+      }
+    });
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Delete" && selectedDeviceId !== null) {
+        setDevices((prev) => prev.filter((d) => d.id !== selectedDeviceId));
+        setSelectedDeviceId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedDeviceId]);
+
+  const handleUpdatePosition = (id: number, x: number, y: number) => {
+    console.log(id, x, y);
+    setDevices((prev) =>
+      prev.map((device) =>
+        device.id === id ? { ...device, x_2d: x, y_2d: y } : device
+      )
+    );
+    console.log(devices);
+  };
   return (
     <main className="flex min-h-screen bg-gray-100">
-      {/* Floor Panel */}
-      <div className="w-64 bg-white shadow-lg z-10">
-        <FloorPanel
-          selectedFloor={selectedFloor}
-          onFloorSelect={setSelectedFloor}
-        />
-      </div>
       {/* Main Content Area */}
       <div className="flex-1 relative">
         {is3DView ? (
           <div className="w-full h-full">
-            <Canvas3d
-              devices={devices_idk_from_where_you_can_say_they_are_mock_data}
-              floor={Number(selectedFloor)}
-            ></Canvas3d>
+            <Canvas3d devices={devices} floor={Number(floor)} />
           </div>
         ) : (
           <div className="w-full h-full">
             <Canvas2d
-              key={selectedFloor}
-              devices={devices_idk_from_where_you_can_say_they_are_mock_data}
-              floor={selectedFloor}
-            ></Canvas2d>
+              floor={Number(floor)}
+              devices={devices}
+              selectedDeviceId={selectedDeviceId}
+              setSelectedDeviceId={setSelectedDeviceId}
+              onUpdatePosition={handleUpdatePosition}
+            />
+
+            <div className="flex">
+              <Button
+                onClick={handleAddCamera}
+                disabled={loading}
+                variant={loading ? "ghost" : "default"}
+                className="m-2 p-2 w-fit"
+              >
+                Add Camera
+              </Button>
+              <Button
+                onClick={handleAddTelephone}
+                disabled={loading}
+                variant={loading ? "ghost" : "default"}
+                className="m-2 p-2 w-fit"
+              >
+                Add Telephone
+              </Button>
+              <Button
+                onClick={handleAddServer}
+                disabled={loading}
+                variant={loading ? "ghost" : "default"}
+                className="m-2 p-2 w-fit"
+              >
+                Add Server
+              </Button>
+              <Button
+                onClick={handleAddNursing}
+                disabled={loading}
+                variant={loading ? "ghost" : "default"}
+                className="m-2 p-2 w-fit"
+              >
+                Add Nursing
+              </Button>
+              <Button
+                onClick={handleAddSensor}
+                disabled={loading}
+                variant={loading ? "ghost" : "default"}
+                className="m-2 p-2 w-fit"
+              >
+                Add Sensor
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={loading}
+                variant={loading ? "ghost" : "default"}
+                className="m-2 p-2 w-fit bg-indigo-800 hover:bg-blue-900"
+              >
+                Save Changes
+              </Button>
+            </div>
           </div>
         )}
 
         {/* View Toggle Button */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20">
           <ViewToggle is3D={is3DView} onToggle={() => setIs3DView(!is3DView)} />
         </div>
       </div>

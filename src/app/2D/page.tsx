@@ -5,20 +5,23 @@ import Canvas2d from "../components/Canvas";
 import Device from "../components/Device";
 import { Button } from "../../components/ui/button";
 import { supabase } from "../../lib/supabase";
+import { useFloor } from "./floorContext";
 
 export default function Page() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const { floor } = useFloor() ?? { floor: 1, setFloor: () => {} };
+
   useEffect(() => {
     handleGetValues();
-    console.log(devices);
   }, []);
   const handleAddCamera = () => {
     const newCamera: Device = {
       type: "camera",
       x_2d: 0,
       y_2d: 0,
+      floor: floor,
     };
 
     setDevices((prev) => [...prev, newCamera]);
@@ -28,6 +31,7 @@ export default function Page() {
       type: "telephone",
       x_2d: 0,
       y_2d: 0,
+      floor: floor,
     };
 
     setDevices((prev) => [...prev, newTelephone]);
@@ -37,6 +41,7 @@ export default function Page() {
       type: "server",
       x_2d: 0,
       y_2d: 0,
+      floor: floor,
     };
 
     setDevices((prev) => [...prev, newServer]);
@@ -46,6 +51,7 @@ export default function Page() {
       type: "nursing",
       x_2d: 0,
       y_2d: 0,
+      floor: floor,
     };
 
     setDevices((prev) => [...prev, newNursing]);
@@ -55,6 +61,7 @@ export default function Page() {
       type: "sensor",
       x_2d: 0,
       y_2d: 0,
+      floor: floor,
     };
 
     setDevices((prev) => [...prev, newSensor]);
@@ -63,11 +70,9 @@ export default function Page() {
     try {
       setLoading(true);
       const { data, error } = await supabase.from("Devices").select("*");
+      console.log(data);
       if (error) throw error;
       setDevices(data);
-      setTimeout(() => {
-        console.log(devices);
-      }, 1000);
       setLoading(false);
     } catch (error) {
       console.error("Error getting devices:", error);
@@ -111,11 +116,10 @@ export default function Page() {
     );
     console.log(devices);
   };
-
   return (
     <>
       <Canvas2d
-        floor={1}
+        floor={floor}
         devices={devices}
         selectedDeviceId={selectedDeviceId}
         setSelectedDeviceId={setSelectedDeviceId}

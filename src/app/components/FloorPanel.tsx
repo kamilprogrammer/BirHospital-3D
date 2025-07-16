@@ -1,43 +1,46 @@
+import { useEffect } from "react";
+
 interface FloorPanelProps {
-  selectedFloor: number;
-  onFloorSelect: (floor: number) => void;
+  floor: number;
+  setFloor: (floor: number) => void;
 }
 
 const floors = [
   {
+    number: 0,
+    icon: "0️⃣",
+    name: "UnderGround Floor",
+    color: "bg-emerald-500",
+    hoverColor: "hover:bg-emerald-600",
+  },
+
+  {
     number: 1,
     icon: "1️⃣",
-    name: "Ground Floor",
+    name: "First Floor",
     color: "bg-emerald-500",
     hoverColor: "hover:bg-emerald-600",
   },
   {
     number: 2,
     icon: "2️⃣",
-    name: "First Floor",
+    name: "Second Floor",
     color: "bg-emerald-500",
     hoverColor: "hover:bg-emerald-600",
   },
   {
     number: 3,
     icon: "3️⃣",
-    name: "Second Floor",
-    color: "bg-emerald-500",
-    hoverColor: "hover:bg-emerald-600",
-  },
-  {
-    number: 4,
-    icon: "4️⃣",
     name: "Third Floor",
     color: "bg-emerald-500",
     hoverColor: "hover:bg-emerald-600",
   },
 ];
 
-export default function FloorPanel({
-  selectedFloor,
-  onFloorSelect,
-}: FloorPanelProps) {
+export default function FloorPanel({ floor, setFloor }: FloorPanelProps) {
+  useEffect(() => {
+    console.log(floor);
+  }, [floor]);
   return (
     <div className="h-full bg-slate-900/95 backdrop-blur-xl p-5 border-r border-slate-800">
       <h2 className="text-sm font-bold mb-6 text-slate-300 flex items-center gap-2">
@@ -58,42 +61,46 @@ export default function FloorPanel({
         Floor Selection
       </h2>
       <div className="space-y-4">
-        {floors.map((floor) => (
+        {floors.map((floorObj) => (
           <button
-            key={floor.number}
-            onClick={() => onFloorSelect(floor.number)}
+            key={floorObj.number}
+            onClick={() => {
+              setFloor(floorObj.number);
+            }}
             className={`w-full group relative overflow-hidden rounded-xl transition-all duration-500 ${
-              selectedFloor === floor.number
-                ? `${floor.color} ring-2 ring-white/10 shadow-lg`
-                : `bg-slate-800/50 ${floor.hoverColor} text-slate-300`
+              floorObj.number === floor
+                ? `${floorObj.color} ring-2 ring-white/10 shadow-lg`
+                : `bg-slate-800/50 ${floorObj.hoverColor} text-slate-300`
             }`}
           >
             <div className="relative z-10 flex items-center p-3">
               <div className="relative">
                 <span className="text-xl transition-all duration-500 group-hover:scale-110 block">
-                  {floor.icon}
+                  {floorObj.icon}
                 </span>
                 <div
                   className={`absolute -inset-2 rounded-full blur-xl transition-opacity duration-500 ${
-                    selectedFloor === floor.number ? "opacity-30" : "opacity-0"
-                  } ${floor.color}`}
+                    floor === floorObj.number ? "opacity-30" : "opacity-0"
+                  } ${floorObj.color}`}
                 />
               </div>
               <div className="text-left ml-3">
-                <p className="font-black text-xs tracking-wide">{floor.name}</p>
+                <p className="font-black text-xs tracking-wide">
+                  {floorObj.name}
+                </p>
                 <p
                   className={`text-[10px] mt-0.5 ${
-                    selectedFloor === floor.number
+                    floor === floorObj.number
                       ? "text-white/70"
                       : "text-slate-400"
                   }`}
                 >
-                  Level {floor.number}
+                  Level {floorObj.number}
                 </p>
               </div>
               <div
                 className={`ml-auto transition-all duration-500 ${
-                  selectedFloor === floor.number
+                  floor === floorObj.number
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 -translate-x-2"
                 }`}
