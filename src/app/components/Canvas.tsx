@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useRef, useState, Dispatch, SetStateAction } from "react";
+import {
+  Suspense,
+  useRef,
+  useState,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+} from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   PivotControls,
@@ -16,6 +23,8 @@ import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { Group } from "three";
 import { useMemo } from "react";
+import { useFloor } from "../2D/floorContext";
+import { MapControls } from "@react-three/drei";
 
 interface Canvas2dProps {
   floor: number;
@@ -92,13 +101,16 @@ function SceneContent({
 
   return (
     <>
-      {devices.map((device) => (
-        <DeviceWithTransform
-          key={device.id}
-          device={device}
-          onUpdatePosition={onUpdatePosition}
-        />
-      ))}
+      {devices.map((device) => {
+        if (device.floor !== floor) return null;
+        return (
+          <DeviceWithTransform
+            key={device.id}
+            device={device}
+            onUpdatePosition={onUpdatePosition}
+          />
+        );
+      })}
 
       <primitive
         object={model.scene}
@@ -111,8 +123,10 @@ function SceneContent({
 }
 
 export default function Canvas2d({
-  floor,
   devices,
+  floor,
+  selectedDeviceId,
+  setSelectedDeviceId,
   onUpdatePosition,
 }: Canvas2dProps) {
   return (
@@ -126,7 +140,16 @@ export default function Canvas2d({
           />
         </Suspense>
         <PerspectiveCamera makeDefault position={[0, 0, 30]} />
-        <OrbitControls makeDefault enableZoom enablePan enableRotate={false} />
+
+        {/* <OrbitControls makeDefault enableZoom enablePan enableRotate={false} /> */}
+        <MapControls
+          enablePan
+          enableZoom
+          enableRotate={false}
+          zoomSpeed={1}
+          panSpeed={1}
+          maxDistance={40}
+        />
         <color attach="background" args={["#ffffff"]} />
       </Canvas>
     </div>
