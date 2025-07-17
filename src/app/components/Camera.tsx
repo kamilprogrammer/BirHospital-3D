@@ -1,0 +1,77 @@
+import { useFrame, useThree } from "@react-three/fiber";
+import { PointerLockControls } from "@react-three/drei";
+import { useRef, useEffect } from "react";
+import * as THREE from "three";
+
+export default function Camera({
+  cameraRef,
+}: {
+  cameraRef: React.RefObject<any>;
+}) {
+  const { camera } = useThree();
+  const direction = new THREE.Vector3();
+  const keys = useRef<{ [key: string]: boolean }>({});
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) =>
+      (keys.current[e.key.toLowerCase()] = true);
+    const up = (e: KeyboardEvent) =>
+      (keys.current[e.key.toLowerCase()] = false);
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, []);
+
+  useFrame(() => {
+    direction.set(0, 0, 0);
+
+    if (keys.current["w"]) {
+      direction.z -= 1;
+    }
+    if (keys.current["s"]) {
+      direction.z += 1;
+    }
+    if (keys.current["a"]) {
+      direction.x -= 1;
+    }
+    if (keys.current["d"]) {
+      direction.x += 1;
+    }
+    if (keys.current[" "]) {
+      direction.y += 1;
+    }
+    if (keys.current["shift"]) {
+      if (camera.position.y > 10) {
+        direction.y -= 1;
+      }
+    }
+
+    // Border
+    if (camera.position.y < 320) {
+      camera.position.y = 320;
+    }
+    /*if (camera.position.y > 150) {
+      camera.position.y = 150;
+    }
+    }
+*/
+    direction.normalize();
+    const moveDir = new THREE.Vector3(direction.x, direction.y, direction.z)
+      .applyQuaternion(camera.quaternion)
+      .normalize()
+      .multiplyScalar(30);
+
+    // Add vertical (y) manually
+    /*if (interior) {
+      moveDir.y = direction.y * speed;
+    }
+*/
+
+    camera.position.add(moveDir);
+  });
+
+  return <PointerLockControls ref={cameraRef} /*makeDefault*/ />;
+}

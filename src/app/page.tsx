@@ -191,7 +191,11 @@ export default function Home() {
         )}
 
         {/* View Toggle Button */}
-        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20">
+        <div
+          className={`absolute ${
+            is3DView ? "bottom-6" : "bottom-16"
+          } left-1/2 transform -translate-x-1/2 z-20`}
+        >
           <ViewToggle is3D={is3DView} onToggle={() => setIs3DView(!is3DView)} />
         </div>
       </div>
