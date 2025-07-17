@@ -25,6 +25,7 @@ import { Group } from "three";
 import { useMemo } from "react";
 import { useFloor } from "../2D/floorContext";
 import { MapControls } from "@react-three/drei";
+import { Bounds, Box } from "@react-three/drei";
 
 interface Canvas2dProps {
   floor: number;
@@ -97,12 +98,16 @@ function SceneContent({
   devices: Device[];
   onUpdatePosition: (id: number, x: number, y: number) => void;
 }) {
-  const model = useGLTF(`/2D - Objects/1.glb`);
+  const model = useGLTF(`/2D - Objects/${floor}.glb`);
+  const scale = 0.005;
 
   return (
     <>
       {devices.map((device) => {
         if (device.floor !== floor) return null;
+        device.x_2d = device.x_2d! * scale * 200;
+        device.y_2d = device.y_2d! * scale * 200;
+
         return (
           <DeviceWithTransform
             key={device.id}
@@ -111,13 +116,19 @@ function SceneContent({
           />
         );
       })}
-
-      <primitive
-        object={model.scene}
-        position={[23, -30.5, 0]}
-        scale={0.005}
-        rotation={[Math.PI / 2, 0, 0]}
-      />
+      <group>
+        <primitive
+          object={model.scene}
+          position={[23, -30.5, 0]}
+          scale={scale}
+          rotation={[Math.PI / 2, 0, 0]}
+        />
+        <mesh>
+          <boxGeometry args={[10, 10, 10]} />
+          {/* Make sure size fits the model */}
+          <meshBasicMaterial color="red" wireframe />
+        </mesh>
+      </group>
     </>
   );
 }
@@ -148,7 +159,7 @@ export default function Canvas2d({
           enableRotate={false}
           zoomSpeed={1}
           panSpeed={1}
-          maxDistance={40}
+          //maxDistance={40}
         />
         <color attach="background" args={["#ffffff"]} />
       </Canvas>
